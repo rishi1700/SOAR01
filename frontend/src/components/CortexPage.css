@@ -1,0 +1,40 @@
+.cortex-container {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-section h1 {
+  flex: 1;
+}
+
+.enabled-analyzers {
+  flex: 1;
+}
+
+.results-section {
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
