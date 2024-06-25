@@ -6,8 +6,9 @@ const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
 const https = require('https');
-const nodemailer = require('nodemailer');
 const axios = require('axios');
+const bodyParser = require('body-parser');
+const { sendEmail } = require('./emailService'); // Import sendEmail
 
 dotenv.config();
 
@@ -18,9 +19,14 @@ const mispRoutes = require('./routes/misp');
 const cortexRoutes = require('./routes/cortex');
 const actionsRoutes = require('./routes/actions');
 const rulesRoutes = require('./routes/rules'); // Import rules route
+const alertsRouter = require('./routes/alerts');
+const threatIntelligenceRouter = require('./routes/threatIntelligence');
+const playbooksRoute = require('./routes/playbooks');
+const alertingRouter = require('./routes/alerting');
 
 const app = express();
 
+app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
 
@@ -38,6 +44,10 @@ app.use('/api/misp', mispRoutes);
 app.use('/api/cortex', cortexRoutes);
 app.use('/api/actions', actionsRoutes);
 app.use('/api/rules', rulesRoutes); // Use rules route
+app.use('/api/alerts', alertsRouter);
+app.use('/api/threat-intelligence', threatIntelligenceRouter);
+app.use('/playbooks', playbooksRoute);
+app.use('/api/alerting', alertingRouter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -51,31 +61,6 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-const smtpTransport = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  }
-});
-
-const sendEmail = (to, subject, text) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to,
-    subject,
-    text,
-  };
-
-  smtpTransport.sendMail(mailOptions, (error, response) => {
-    if (error) {
-      console.error('Error sending email:', error);
-    } else {
-      console.log('Email sent:', response);
-    }
-  });
-};
 
 app.post('/api/testEmail', (req, res) => {
   const { to, subject, text } = req.body;
