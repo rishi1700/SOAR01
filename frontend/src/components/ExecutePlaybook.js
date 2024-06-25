@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const ExecutePlaybook = () => {
-  const [alertId, setAlertId] = useState('iZJyTJABheeGgZ8WY1lv'); // Replace with the new document ID
+  const [alertId, setAlertId] = useState('iZJyTJABheeGgZ8WY1lv');
   const [index, setIndex] = useState('snort-logs-2024.06.13');
   const [response, setResponse] = useState('');
 

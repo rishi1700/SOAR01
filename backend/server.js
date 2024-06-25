@@ -8,7 +8,6 @@ const { Server } = require('socket.io');
 const https = require('https');
 const axios = require('axios');
 const bodyParser = require('body-parser');
-const { sendEmail } = require('./emailService'); // Import sendEmail
 
 dotenv.config();
 
@@ -60,12 +59,6 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
-
-app.post('/api/testEmail', (req, res) => {
-  const { to, subject, text } = req.body;
-  sendEmail(to, subject, text);
-  res.send('Test email sent');
 });
 
 io.on('connection', (socket) => {

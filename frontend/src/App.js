@@ -19,6 +19,9 @@ import ThreatIntelligence from './components/ThreatIntelligence';
 import PlaybookExecutor from './components/PlaybookExecutor';
 import Alerting from './components/Alerting';
 import ExecutePlaybook from './components/ExecutePlaybook';
+import CreateCase from './components/CreateCase'; // Import CreateCase
+import LaunchAnalysis from './components/LaunchAnalysis'; // Import LaunchAnalysis
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState('');
@@ -69,24 +72,9 @@ const App = () => {
                 <Button color="inherit" component={Link} to="/dashboard">
                   Dashboard
                 </Button>
-                <Button color="inherit" component={Link} to="/thehive">
-                  TheHive
-                </Button>
-                <Button color="inherit" component={Link} to="/notifications">
-                  Notifications
-                </Button>
-                <Button color="inherit" component={Link} to="/misp">
-                  MISP
-                </Button>
-                <Button color="inherit" component={Link} to="/virustotal">
-                  VirusTotal
-                </Button>
-                <Button color="inherit" component={Link} to="/cortex">
-                  Cortex
-                </Button>
                 <Button color="inherit" component={Link} to="/rules">
                   Rules
-                  </Button>
+                </Button>
                 {userRole === 'admin' && (
                   <>
                     <Button color="inherit" component={Link} to="/register">
@@ -100,6 +88,12 @@ const App = () => {
                     </Button>
                     <Button color="inherit" component={Link} to="/set-alert">
                       Set Alert
+                    </Button>
+                    <Button color="inherit" component={Link} to="/create-case">
+                      Create Case
+                    </Button>
+                    <Button color="inherit" component={Link} to="/launch-analysis">
+                      Launch Analysis
                     </Button>
                   </>
                 )}
@@ -115,18 +109,14 @@ const App = () => {
           <Route path="/login" element={<Login setAuth={setIsAuthenticated} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={isAuthenticated ? <Dashboard handleLogout={handleLogout} /> : <Navigate to="/login" />} />
-          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/notifications" element={isAuthenticated ? <Notifications /> : <Navigate to="/login" />} />
-          <Route path="/thehive" element={isAuthenticated ? <TheHivePage /> : <Navigate to="/login" />} />
-          <Route path="/misp" element={isAuthenticated ? <MISPPage /> : <Navigate to="/login" />} />
-          <Route path="/virustotal" element={isAuthenticated ? <VirusTotalPage /> : <Navigate to="/login" />} />
-          <Route path="/cortex" element={isAuthenticated ? <CortexPage /> : <Navigate to="/login" />} />
           <Route path="/rules" element={isAuthenticated ? <RulesPage /> : <Navigate to="/login" />} />
           <Route path="/trends" element={isAuthenticated ? <AlertTrends /> : <Navigate to="/login" />} />
           <Route path="/threat-intelligence" element={isAuthenticated && userRole === 'admin' ? <ThreatIntelligence /> : <Navigate to="/login" />} />
           <Route path="/register" element={isAuthenticated && userRole === 'admin' ? <Register /> : <Navigate to="/login" />} />
           <Route path="/execute-playbook" element={isAuthenticated && userRole === 'admin' ? <ExecutePlaybook /> : <Navigate to="/login" />} />
           <Route path="/set-alert" element={isAuthenticated && userRole === 'admin' ? <Alerting /> : <Navigate to="/login" />} />
+          <Route path="/create-case" element={isAuthenticated && userRole === 'admin' ? <CreateCase /> : <Navigate to="/login" />} />
+          <Route path="/launch-analysis" element={isAuthenticated && userRole === 'admin' ? <LaunchAnalysis /> : <Navigate to="/login" />} />
         </Routes>
       </Router>
     </ThemeProvider>

@@ -1,8 +1,6 @@
 // emailService.js
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-//console.log('EMAIL_USER:', process.env.EMAIL_USER); // Add this line to check if the environment variables are loaded correctly
-//console.log('EMAIL_PASS:', process.env.EMAIL_PASS); // Add this line to check if the environment variables are loaded correctly
 
 const smtpTransport = nodemailer.createTransport({
   service: 'gmail',
@@ -12,7 +10,7 @@ const smtpTransport = nodemailer.createTransport({
   }
 });
 
-const sendEmail = (to, subject, text) => {
+const sendAlertEmail = (to, subject, text) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to,
@@ -29,4 +27,4 @@ const sendEmail = (to, subject, text) => {
   });
 };
 
-module.exports = { sendEmail };
+module.exports = { sendAlertEmail };

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const https = require('https');
-const { sendEmail } = require('../emailService'); // Import sendEmail
+const { sendAlertEmail } = require('../services/emailService');
 
 // Elasticsearch credentials and URL
 const ES_URL = process.env.ELASTICSEARCH_HOST;
@@ -10,7 +10,7 @@ const ES_USERNAME = process.env.ELASTICSEARCH_USERNAME;
 const ES_PASSWORD = process.env.ELASTICSEARCH_PASSWORD;
 
 // Create a new HTTPS agent with self-signed certificate handling
-const httpsAgent = new https.Agent({  
+const httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });
 
@@ -33,17 +33,20 @@ router.post('/execute', async (req, res) => {
       httpsAgent
     });
 
-    const alert = alertResponse.data._source;
-    console.log('Fetched alert:', alert);
+    const alert = alertResponse.data;
+    console.log('Full alert response:', JSON.stringify(alert, null, 2));
 
-    // Implement the playbook logic here
-    // Example: Send an email notification
-    const emailSubject = `Alert: ${alert.severity || 'Unknown'} severity - ${alert.message}`;
-    const emailText = `Alert Details:\n\nMessage: ${alert.message}\nSeverity: ${alert.severity || 'Unknown'}\nTimestamp: ${alert['@timestamp']}`;
+    const alertSource = alert._source;
+    console.log('Fetched alert source:', alertSource);
 
-    sendEmail('prasadrishi170@gmail.com', emailSubject, emailText); // Use your own email address for testing
+    // Send an email with alert details
+    sendAlertEmail(
+      'prasadrishi170@gmail.com',
+      'Alert Notification',
+      `Alert Details:\n\nMessage: ${alertSource.event ? alertSource.event.original : 'N/A'}\nSeverity: ${alertSource.alert_priority || 'Unknown'}\nTimestamp: ${alertSource['@timestamp']}`
+    );
 
-    res.json({ message: 'Playbook executed successfully', alert });
+    res.json({ message: 'Playbook executed successfully', alert: alertSource });
   } catch (error) {
     console.error('Error executing playbook:', error);
     res.status(500).json({ error: 'Error executing playbook', details: error.response ? error.response.data : error.message });

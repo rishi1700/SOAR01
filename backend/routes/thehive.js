@@ -2,11 +2,22 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-router.get('/cases', async (req, res) => {
+router.post('/case', async (req, res) => {
+  const { title, description, severity } = req.body;
+  console.log('Received create case request:', req.body);
+
+  if (!title || !description || !severity) {
+    return res.status(400).json({ error: 'Title, description, and severity are required' });
+  }
+
   try {
     const response = await axios.post(
-      `${process.env.THEHIVE_URL}/api/v1/query`,
-      { query: [{ _name: 'listCase' }] },
+      `${process.env.THEHIVE_URL}/api/case`,
+      {
+        title,
+        description,
+        severity: parseInt(severity),
+      },
       {
         headers: {
           Authorization: `Bearer ${process.env.THEHIVE_API_KEY}`,
@@ -14,10 +25,11 @@ router.get('/cases', async (req, res) => {
         },
       }
     );
+
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching cases from TheHive:', error.message);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error creating case in TheHive:', error.message);
+    res.status(500).json({ error: 'Error creating case in TheHive' });
   }
 });
 
