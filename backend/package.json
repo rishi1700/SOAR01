@@ -23,6 +23,7 @@
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.3",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.13",
     "react-router-dom": "^6.23.1",
     "socket.io": "^4.7.5",

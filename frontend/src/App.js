@@ -11,7 +11,6 @@ import Profile from './components/Profile';
 import Notifications from './components/Notifications';
 import TheHivePage from './components/TheHivePage';
 import MISPPage from './components/MISPPage'; 
-import VirusTotalPage from './components/VirusTotalPage';
 import CortexPage from './components/CortexPage';
 import RulesPage from './components/RulesPage';
 import AlertTrends from './components/AlertTrends';
@@ -21,6 +20,11 @@ import Alerting from './components/Alerting';
 import ExecutePlaybook from './components/ExecutePlaybook';
 import CreateCase from './components/CreateCase'; // Import CreateCase
 import LaunchAnalysis from './components/LaunchAnalysis'; // Import LaunchAnalysis
+import VirusTotalAnalysis from './components/VirusTotalAnalysis';
+import IsolateHost from './components/IsolateHost';
+import CorrelatedAlerts from './components/CorrelatedAlerts';
+import AutoResponse from './components/AutoResponse';
+import AlertDetails from './components/AlertDetails'; // Import AlertDetails
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,7 +49,7 @@ const App = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      const { role } = JSON.parse(atob(token.split('.')[1])); // Decode JWT payload
+      const { role } = JSON.parse(atob(token.split('.')[1])); 
       setIsAuthenticated(true);
       setUserRole(role);
       console.log('User authenticated:', true, 'Role:', role);
@@ -95,6 +99,21 @@ const App = () => {
                     <Button color="inherit" component={Link} to="/launch-analysis">
                       Launch Analysis
                     </Button>
+                    <Button color="inherit" component={Link} to="/virustotal-analysis">
+                      VirusTotal Analysis
+                    </Button>
+                    <Button color="inherit" component={Link} to="/isolate-host">
+                      Isolate Host
+                    </Button>
+                    <Button color="inherit" component={Link} to="/correlated-alerts">
+                      Correlated Alerts
+                    </Button>
+                    <Button color="inherit" component={Link} to="//alert/:id">
+                      Alert Details
+                    </Button>
+                    <Button color="inherit" component={Link} to="/auto-response">
+                      Auto Response
+                    </Button>
                   </>
                 )}
                 <Button color="inherit" onClick={handleLogout}>
@@ -117,6 +136,12 @@ const App = () => {
           <Route path="/set-alert" element={isAuthenticated && userRole === 'admin' ? <Alerting /> : <Navigate to="/login" />} />
           <Route path="/create-case" element={isAuthenticated && userRole === 'admin' ? <CreateCase /> : <Navigate to="/login" />} />
           <Route path="/launch-analysis" element={isAuthenticated && userRole === 'admin' ? <LaunchAnalysis /> : <Navigate to="/login" />} />
+          <Route path="/virustotal-analysis" element={isAuthenticated && userRole === 'admin' ? <VirusTotalAnalysis /> : <Navigate to="/login" />} />
+          <Route path="/isolate-host" element={isAuthenticated && userRole === 'admin' ? <IsolateHost /> : <Navigate to="/login" />} />
+          <Route path="/correlated-alerts" element={isAuthenticated && userRole === 'admin' ? <CorrelatedAlerts /> : <Navigate to="/login" />} />
+          <Route path="/auto-response" element={isAuthenticated && userRole === 'admin' ? <AutoResponse /> : <Navigate to="/login" />} />
+          <Route path="/alert/:id" element={isAuthenticated ? <AlertDetails /> : <Navigate to="/login" />} />
+
         </Routes>
       </Router>
     </ThemeProvider>

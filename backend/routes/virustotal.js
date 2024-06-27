@@ -1,12 +1,12 @@
-// routes/virustotal.js
+// virustotal.js
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-router.get('/scan/:hash', async (req, res) => {
-  const hash = req.params.hash;
+router.post('/analyze', async (req, res) => {
+  const { observable, type } = req.body; // type can be ip, domain, or hash
   try {
-    const response = await axios.get(`https://www.virustotal.com/api/v3/ip_addresses/${ip}`, {
+    const response = await axios.get(`https://www.virustotal.com/api/v3/${type}/${observable}`, {
       headers: {
         'x-apikey': process.env.VIRUSTOTAL_API_KEY,
       },

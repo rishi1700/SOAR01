@@ -14,7 +14,6 @@ dotenv.config();
 const authRoutes = require('./routes/auth');
 const elasticRoutes = require('./routes/elasticsearch');
 const thehiveRoutes = require('./routes/thehive');
-const mispRoutes = require('./routes/misp');
 const cortexRoutes = require('./routes/cortex');
 const actionsRoutes = require('./routes/actions');
 const rulesRoutes = require('./routes/rules'); // Import rules route
@@ -22,6 +21,8 @@ const alertsRouter = require('./routes/alerts');
 const threatIntelligenceRouter = require('./routes/threatIntelligence');
 const playbooksRoute = require('./routes/playbooks');
 const alertingRouter = require('./routes/alerting');
+const virustotalRoutes = require('./routes/virustotal');
+const correlationRoutes = require('./routes/correlation');
 
 const app = express();
 
@@ -39,7 +40,6 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/auth', authRoutes);
 app.use('/api', elasticRoutes);
 app.use('/api/thehive', thehiveRoutes);
-app.use('/api/misp', mispRoutes);
 app.use('/api/cortex', cortexRoutes);
 app.use('/api/actions', actionsRoutes);
 app.use('/api/rules', rulesRoutes); // Use rules route
@@ -47,6 +47,8 @@ app.use('/api/alerts', alertsRouter);
 app.use('/api/threat-intelligence', threatIntelligenceRouter);
 app.use('/playbooks', playbooksRoute);
 app.use('/api/alerting', alertingRouter);
+app.use('/api/virustotal', virustotalRoutes);
+app.use('/api/correlation', correlationRoutes);
 
 const server = http.createServer(app);
 const io = new Server(server, {
