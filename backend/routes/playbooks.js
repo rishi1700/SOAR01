@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const https = require('https');
-const { sendAlertEmail } = require('../services/emailService');
 const { exec } = require('child_process');
+const { sendAlertEmail } = require('../services/emailService');
 
 // Elasticsearch credentials and URL
 const ES_URL = process.env.ELASTICSEARCH_HOST;
@@ -19,7 +19,7 @@ const httpsAgent = new https.Agent({
 const blockIP = async (ip) => {
   return new Promise((resolve, reject) => {
     const command = `ssh rishi@192.168.18.14 "sudo /sbin/iptables -A INPUT -s ${ip} -j DROP && sudo /sbin/iptables -A OUTPUT -d ${ip} -j DROP"`;
-    console.log(`Executing command: ${command}`);  // Log the command
+    console.log(`Executing command: ${command}`);
     exec(command, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error blocking IP: ${stderr}`);
@@ -32,7 +32,6 @@ const blockIP = async (ip) => {
   });
 };
 
-// Execute playbook route
 router.post('/execute', async (req, res) => {
   const { alertId, index } = req.body;
   console.log('Received execute request:', req.body);
@@ -42,7 +41,6 @@ router.post('/execute', async (req, res) => {
   }
 
   try {
-    // Fetch the alert document from Elasticsearch
     const alertResponse = await axios.get(`${ES_URL}/${index}/_doc/${alertId}`, {
       auth: {
         username: ES_USERNAME,
@@ -57,7 +55,6 @@ router.post('/execute', async (req, res) => {
     const alertSource = alert._source;
     console.log('Fetched alert source:', alertSource);
 
-    // Send an email with alert details
     sendAlertEmail(
       'prasadrishi170@gmail.com',
       'Alert Notification',
@@ -75,7 +72,7 @@ router.post('/isolate-host', async (req, res) => {
   const { hostId } = req.body;
 
   try {
-    console.log(`Attempting to isolate host with ID: ${hostId}`);  // Add a log for the hostId
+    console.log(`Attempting to isolate host with ID: ${hostId}`);
     const isolateResponse = await blockIP(hostId);
     res.json({ message: 'Host isolated successfully', details: isolateResponse });
   } catch (error) {
@@ -84,16 +81,48 @@ router.post('/isolate-host', async (req, res) => {
   }
 });
 
-router.post('/auto-response', async (req, res) => {
-  const { correlatedAlerts } = req.body;
-
+// Function to fetch correlated alerts from Elasticsearch
+const fetchCorrelatedAlerts = async () => {
   try {
+    const response = await axios.get(`${ES_URL}/snort-logs-*/_search`, {
+      auth: {
+        username: ES_USERNAME,
+        password: ES_PASSWORD,
+      },
+      httpsAgent,
+      params: {
+        size: 10,
+        sort: '@timestamp:desc',
+        query: {
+          match_all: {}
+        }
+      }
+    });
+    return response.data.hits.hits;
+  } catch (error) {
+    console.error('Error fetching correlated alerts:', error);
+    throw new Error('Failed to fetch correlated alerts');
+  }
+};
+
+router.post('/auto-response', async (req, res) => {
+  try {
+    const alerts = await fetchCorrelatedAlerts();
+    const correlatedAlerts = {};
+
+    alerts.forEach(alert => {
+      const srcIp = alert._source.observable_src_ip;
+      if (!correlatedAlerts[srcIp]) {
+        correlatedAlerts[srcIp] = [];
+      }
+      correlatedAlerts[srcIp].push(alert);
+    });
+
     console.log('Received correlated alerts:', JSON.stringify(correlatedAlerts, null, 2));
     for (const ip in correlatedAlerts) {
-      // Example: Isolate host if multiple high severity alerts are detected for the same IP
       const alerts = correlatedAlerts[ip];
       console.log(`Processing alerts for IP: ${ip}`, alerts);
-      const highSeverityAlerts = alerts.filter(alert => alert._source && alert._source.alert_priority === 'high');
+      const highSeverityAlerts = alerts.filter(alert => alert._source && (alert._source.alert_priority === 'high' || alert._source.alert_priority === '0'));
       console.log(`High severity alerts for IP ${ip}:`, highSeverityAlerts);
       if (highSeverityAlerts.length > 1) {
         console.log(`Blocking IP: ${ip} due to multiple high severity alerts`);

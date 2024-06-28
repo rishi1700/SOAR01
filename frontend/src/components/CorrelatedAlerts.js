@@ -1,13 +1,16 @@
-// CorrelatedAlerts.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AlertDetails from './AlertDetails';
+import { Link } from 'react-router-dom';
 
 const CorrelatedAlerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState({ severity: '', startDate: '', endDate: '' });
+  const [filter, setFilter] = useState({ severity: '', srcIP: '', dstIP: '', startDate: '', endDate: '' });
+  const [selectedAlert, setSelectedAlert] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchAlerts = async (pageNumber, filters) => {
     setLoading(true);
@@ -47,6 +50,16 @@ const CorrelatedAlerts = () => {
     fetchAlerts(1, filter);
   };
 
+  const handleAlertClick = (alert) => {
+    setSelectedAlert(alert);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAlert(null);
+  };
+
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -58,6 +71,14 @@ const CorrelatedAlerts = () => {
         <label>
           Severity:
           <input type="text" name="severity" value={filter.severity} onChange={handleFilterChange} />
+        </label>
+        <label>
+          Source IP:
+          <input type="text" name="srcIP" value={filter.srcIP} onChange={handleFilterChange} />
+        </label>
+        <label>
+          Destination IP:
+          <input type="text" name="dstIP" value={filter.dstIP} onChange={handleFilterChange} />
         </label>
         <label>
           Start Date:
@@ -75,17 +96,22 @@ const CorrelatedAlerts = () => {
         <ul>
           {alerts.map((alert, index) => (
             <li key={index}>
-              <p>Timestamp: {alert['@timestamp']}</p>
-              <p>Alert Message: {alert.observable_alert_message || alert['event.original'] || 'N/A'}</p>
-              <p>Source IP: {alert.observable_src_ip || 'N/A'}</p>
-              <p>Destination IP: {alert.observable_dst_ip || 'N/A'}</p>
-            </li>
+  <Link to={`/alert/${alert._id}`}>
+    <p>Timestamp: {alert['@timestamp']}</p>
+    <p>Alert Message: {alert.observable_alert_message || alert['event.original'] || 'N/A'}</p>
+    <p>Source IP: {alert.observable_src_ip || 'N/A'}</p>
+    <p>Destination IP: {alert.observable_dst_ip || 'N/A'}</p>
+  </Link>
+</li>
           ))}
         </ul>
       )}
       <button onClick={handleLoadMore} disabled={loading}>
         {loading ? 'Loading...' : 'Load More'}
       </button>
+      {selectedAlert && (
+        <AlertDetails alert={selectedAlert} open={isModalOpen} onClose={handleCloseModal} />
+      )}
     </div>
   );
 };

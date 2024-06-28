@@ -1,52 +1,73 @@
-// AlertDetails.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { Container, Typography, Paper, Grid, Chip } from '@mui/material';
+import PublicIcon from '@mui/icons-material/Public';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 const AlertDetails = () => {
-  const { id } = useParams();
-  const [alertDetails, setAlertDetails] = useState(null);
-  const [error, setError] = useState(null);
+    const { id } = useParams();
+    const [alert, setAlert] = useState(null);
+    const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchAlertDetails = async () => {
-      try {
-        const response = await axios.get(`https://192.168.18.10:9200/snort-logs-*/_doc/${id}`, {
-          auth: {
-            username: 'elastic',
-            password: 'ChangeME'
-          },
-          httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
-        });
-        setAlertDetails(response.data);
-      } catch (error) {
-        setError(error);
-      }
-    };
+    useEffect(() => {
+        const fetchAlert = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/alerts/${id}`);
+                console.log('Response:', response.data); // Add this line
+                if (response.data.hits && response.data.hits.hits.length > 0) {
+                    setAlert(response.data.hits.hits[0]._source);
+                } else {
+                    setError('No alert found');
+                }
+            } catch (error) {
+                console.error('Error fetching alert details:', error);
+                setError('Error fetching alert details');
+            }
+        };
 
-    fetchAlertDetails();
-  }, [id]);
+        fetchAlert();
+    }, [id]);
 
-  if (error) {
-    return <div>Error fetching alert details: {error.message}</div>;
-  }
+    if (error) {
+        return <Typography color="error">{error}</Typography>;
+    }
 
-  if (!alertDetails) {
-    return <div>Loading...</div>;
-  }
+    if (!alert) {
+        return <Typography>Loading...</Typography>;
+    }
 
-  return (
-    <div>
-      <h2>Alert Details</h2>
-      <p>Timestamp: {alertDetails._source['@timestamp']}</p>
-      <p>Alert Message: {alertDetails._source.observable_alert_message}</p>
-      <p>Source IP: {alertDetails._source.observable_src_ip}</p>
-      <p>Destination IP: {alertDetails._source.observable_dst_ip}</p>
-      <p>Source Port: {alertDetails._source.observable_src_port}</p>
-      <p>Destination Port: {alertDetails._source.observable_dst_port}</p>
-      <p>Protocol: {alertDetails._source.observable_protocol}</p>
-    </div>
-  );
+    return (
+        <Container>
+            <Typography variant="h4" gutterBottom>
+                Alert Details
+            </Typography>
+            <Paper elevation={3} style={{ padding: '16px' }}>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Typography variant="h6">Timestamp</Typography>
+                        <Typography>{alert['@timestamp']}</Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography variant="h6">Message</Typography>
+                        <Typography>{alert.observable_alert_message}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Typography variant="h6">Source IP</Typography>
+                        <Chip icon={<PublicIcon />} label={alert.observable_src_ip} color="primary" />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Typography variant="h6">Destination IP</Typography>
+                        <Chip icon={<LocationOnIcon />} label={alert.observable_dst_ip} color="secondary" />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography variant="h6">Priority</Typography>
+                        <Typography>{alert.alert_priority}</Typography>
+                    </Grid>
+                </Grid>
+            </Paper>
+        </Container>
+    );
 };
 
 export default AlertDetails;

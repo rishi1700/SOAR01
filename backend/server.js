@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -16,13 +15,14 @@ const elasticRoutes = require('./routes/elasticsearch');
 const thehiveRoutes = require('./routes/thehive');
 const cortexRoutes = require('./routes/cortex');
 const actionsRoutes = require('./routes/actions');
-const rulesRoutes = require('./routes/rules'); // Import rules route
+const rulesRoutes = require('./routes/rules');
 const alertsRouter = require('./routes/alerts');
 const threatIntelligenceRouter = require('./routes/threatIntelligence');
 const playbooksRoute = require('./routes/playbooks');
 const alertingRouter = require('./routes/alerting');
 const virustotalRoutes = require('./routes/virustotal');
 const correlationRoutes = require('./routes/correlation');
+const dashboardRoutes = require('./routes/dashboard'); // Import the dashboard route
 
 const app = express();
 
@@ -42,14 +42,16 @@ app.use('/api', elasticRoutes);
 app.use('/api/thehive', thehiveRoutes);
 app.use('/api/cortex', cortexRoutes);
 app.use('/api/actions', actionsRoutes);
-app.use('/api/rules', rulesRoutes); // Use rules route
+app.use('/api/rules', rulesRoutes);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/threat-intelligence', threatIntelligenceRouter);
 app.use('/playbooks', playbooksRoute);
 app.use('/api/alerting', alertingRouter);
 app.use('/api/virustotal', virustotalRoutes);
 app.use('/api/correlation', correlationRoutes);
+app.use('/dashboard', dashboardRoutes); // Use the dashboard route
 
+const PORT = process.env.PORT || 5000; // Define PORT here
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -58,7 +60,6 @@ const io = new Server(server, {
   },
 });
 
-const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
@@ -74,19 +75,32 @@ io.on('connection', (socket) => {
           password: process.env.ELASTICSEARCH_PASSWORD,
         },
         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-        params: {
-          size: 1000,
+        data: {
+          size: 5, // Fetch the most recent 5 alerts
+          query: {
+            match_all: {}
+          },
+          sort: [
+            {
+              '@timestamp': {
+                order: 'desc'
+              }
+            }
+          ]
         },
         headers: {
           'Content-Type': 'application/json',
+          'source': true,
+          'source_content_type': 'application/json'
         },
       });
 
-      const hits = elasticResponse.data.hits.hits.sort((a, b) => new Date(b._source['@timestamp']) - new Date(a._source['@timestamp']));
-
-      socket.emit('dataUpdate', hits.slice(0, 5));
+      const hits = elasticResponse.data.hits.hits;
+      socket.emit('dataUpdate', hits);
     } catch (error) {
       console.error('Error fetching data from Elasticsearch:', error.response ? error.response.data : error.message);
     }
   }, 5000);
 });
+
+

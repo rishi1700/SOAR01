@@ -1,5 +1,5 @@
-// IsolateHost.js
 import React, { useState } from 'react';
+import { Container, TextField, Button, Typography } from '@mui/material';
 import axios from 'axios';
 
 const IsolateHost = () => {
@@ -17,17 +17,18 @@ const IsolateHost = () => {
   };
 
   return (
-    <div>
-      <h2>Isolate Host</h2>
-      <input
-        type="text"
-        placeholder="Host ID"
+    <Container>
+      <Typography variant="h4" gutterBottom>Isolate Host</Typography>
+      <TextField
+        label="Host ID"
         value={hostId}
         onChange={(e) => setHostId(e.target.value)}
+        fullWidth
+        margin="normal"
       />
-      <button onClick={handleIsolate}>Isolate Host</button>
-      <p>{response}</p>
-    </div>
+      <Button variant="contained" color="primary" onClick={handleIsolate}>Isolate Host</Button>
+      <Typography variant="body1" color="textSecondary" style={{ marginTop: '20px' }}>{response}</Typography>
+    </Container>
   );
 };
 

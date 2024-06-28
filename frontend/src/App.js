@@ -7,15 +7,9 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
-import Profile from './components/Profile';
-import Notifications from './components/Notifications';
-import TheHivePage from './components/TheHivePage';
-import MISPPage from './components/MISPPage'; 
-import CortexPage from './components/CortexPage';
 import RulesPage from './components/RulesPage';
 import AlertTrends from './components/AlertTrends';
 import ThreatIntelligence from './components/ThreatIntelligence';
-import PlaybookExecutor from './components/PlaybookExecutor';
 import Alerting from './components/Alerting';
 import ExecutePlaybook from './components/ExecutePlaybook';
 import CreateCase from './components/CreateCase'; // Import CreateCase
@@ -108,9 +102,6 @@ const App = () => {
                     <Button color="inherit" component={Link} to="/correlated-alerts">
                       Correlated Alerts
                     </Button>
-                    <Button color="inherit" component={Link} to="//alert/:id">
-                      Alert Details
-                    </Button>
                     <Button color="inherit" component={Link} to="/auto-response">
                       Auto Response
                     </Button>
@@ -140,7 +131,7 @@ const App = () => {
           <Route path="/isolate-host" element={isAuthenticated && userRole === 'admin' ? <IsolateHost /> : <Navigate to="/login" />} />
           <Route path="/correlated-alerts" element={isAuthenticated && userRole === 'admin' ? <CorrelatedAlerts /> : <Navigate to="/login" />} />
           <Route path="/auto-response" element={isAuthenticated && userRole === 'admin' ? <AutoResponse /> : <Navigate to="/login" />} />
-          <Route path="/alert/:id" element={isAuthenticated ? <AlertDetails /> : <Navigate to="/login" />} />
+          <Route path="/alert/:id" element={isAuthenticated && userRole === 'admin' ? <AlertDetails /> : <Navigate to="/login" />} />
 
         </Routes>
       </Router>
